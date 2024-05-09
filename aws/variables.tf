@@ -1,5 +1,5 @@
 variable "account" { type = string }
-variable bgp_manual_spoke_advertise_cidrs { type = string }
+variable "bgp_manual_spoke_advertise_cidrs" { type = string }
 variable "cloud" { type = string }
 variable "controller_ip" { type = string }
 variable "gw_name" { type = string }
@@ -15,3 +15,19 @@ variable "username" { type = string }
 variable "vpc_name" { type = string }
 variable "tgw_asn" { type = string }
 variable "tgw_cidr" { type = list(string) }
+variable "spokes" {
+  type = map(object({
+    account                          = string
+    attached                         = bool
+    customized_spoke_vpc_routes      = string
+    enable_max_performance           = bool
+    gw_subnet                        = string
+    hagw_subnet                      = string
+    insane_mode                      = bool
+    spoke_instance_size              = string
+    inspection                       = bool
+    included_advertised_spoke_routes = string
+    region                           = string
+    vpc_id                           = string
+  }))
+}

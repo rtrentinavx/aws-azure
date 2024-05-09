@@ -7,7 +7,7 @@ terraform {
   }
   backend "s3" {
     bucket = "lab-avx-terraform-state"
-    key    = "meshing.transit.state.file"
+    key    = "b.meshing.transit.state.file"
     region = "us-east-1"
   }
 }

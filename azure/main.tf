@@ -14,7 +14,7 @@ module "mc-transit" {
   gw_name                       = var.gw_name
   gw_subnet                     = var.gw_subnet
   hagw_subnet                   = var.hagw_subnet
-  insane_mode = var.insane_mode
+  insane_mode                   = var.insane_mode
   instance_size                 = var.instance_size
   local_as_number               = var.local_as_number
   region                        = var.region
@@ -25,7 +25,7 @@ module "mc-transit" {
   # Safe Mechanism: adversting a non-existent prefix 
   #
   bgp_manual_spoke_advertise_cidrs = var.bgp_manual_spoke_advertise_cidrs
-  enable_preserve_as_path = true 
+  enable_preserve_as_path          = true
 }
 resource "azurerm_public_ip" "pip-ars" {
   name                = "pip-ars-${var.ars_virtual_network_name}"
@@ -45,7 +45,7 @@ resource "azurerm_route_server" "ars" {
 }
 
 resource "azurerm_virtual_network_peering" "transit_to_ars-virtual_network_peering" {
-  depends_on = [ azurerm_route_server.ars ]
+  depends_on                   = [azurerm_route_server.ars]
   name                         = "transit-to-ars"
   resource_group_name          = split(":", module.mc-transit.transit_gateway.vpc_id)[1]
   virtual_network_name         = split(":", module.mc-transit.transit_gateway.vpc_id)[0]
@@ -56,7 +56,7 @@ resource "azurerm_virtual_network_peering" "transit_to_ars-virtual_network_peeri
 }
 
 resource "azurerm_virtual_network_peering" "ars_to_transit-virtual_network_peering" {
-  depends_on = [ azurerm_route_server.ars ]
+  depends_on                   = [azurerm_route_server.ars]
   name                         = "ars-to-transit"
   resource_group_name          = var.ars_resource_group_name
   virtual_network_name         = var.ars_virtual_network_name
@@ -67,7 +67,7 @@ resource "azurerm_virtual_network_peering" "ars_to_transit-virtual_network_peeri
 }
 
 resource "aviatrix_transit_external_device_conn" "transit_to_ars" {
-  depends_on = [ azurerm_virtual_network_peering.ars_to_transit-virtual_network_peering, azurerm_virtual_network_peering.transit_to_ars-virtual_network_peering ]
+  depends_on                = [azurerm_virtual_network_peering.ars_to_transit-virtual_network_peering, azurerm_virtual_network_peering.transit_to_ars-virtual_network_peering]
   backup_bgp_remote_as_num  = azurerm_route_server.ars.virtual_router_asn
   backup_local_lan_ip       = module.mc-transit.transit_gateway.ha_bgp_lan_ip_list[0]
   backup_remote_lan_ip      = tolist(azurerm_route_server.ars.virtual_router_ips)[1]
@@ -97,4 +97,26 @@ resource "azurerm_route_server_bgp_connection" "ars_to_transit_secondary" {
   route_server_id = azurerm_route_server.ars.id
   peer_asn        = module.mc-transit.transit_gateway.local_as_number
   peer_ip         = module.mc-transit.transit_gateway.ha_bgp_lan_ip_list[0]
+}
+module "mc-spoke" {
+  for_each                         = var.spokes
+  source                           = "terraform-aviatrix-modules/mc-spoke/aviatrix"
+  version                          = "1.6.9"
+  account                          = each.value.account
+  attached                         = each.value.attached
+  cloud                            = var.cloud
+  customized_spoke_vpc_routes      = each.value.customized_spoke_vpc_routes
+  enable_max_performance           = each.value.enable_max_performance
+  gw_subnet                        = each.value.gw_subnet
+  hagw_subnet                      = each.value.hagw_subnet
+  included_advertised_spoke_routes = each.value.included_advertised_spoke_routes
+  insane_mode                      = each.value.insane_mode
+  inspection                       = each.value.inspection
+  instance_size                    = each.value.spoke_instance_size
+  region                           = var.region
+  resource_group                   = each.value.resource_group_name
+  transit_gw                       = module.mc-transit.transit_gateway.gw_name
+  use_existing_vpc                 = true
+  vpc_id                           = format("%s:%s:%s", each.value.vpc_id, each.value.resource_group_name, "${data.azurerm_virtual_network.spoke_vnet[each.key].guid}")
+  name                             = each.key
 }

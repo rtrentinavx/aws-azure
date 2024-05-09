@@ -5,16 +5,16 @@ data "aws_vpcs" "vpc" {
   }
 }
 data "aws_subnet" "gw_subnet" {
-  depends_on = [ module.mc-transit ]
-  vpc_id = element(data.aws_vpcs.vpc.ids, 0)
+  depends_on = [module.mc-transit]
+  vpc_id     = element(data.aws_vpcs.vpc.ids, 0)
   filter {
     name   = "tag:Name"
     values = ["aviatrix-aws-transit"]
   }
 }
 data "aws_subnet" "hagw_subnet" {
-  depends_on = [ module.mc-transit ]
-  vpc_id = element(data.aws_vpcs.vpc.ids, 0)
+  depends_on = [module.mc-transit]
+  vpc_id     = element(data.aws_vpcs.vpc.ids, 0)
   filter {
     name   = "tag:Name"
     values = ["aviatrix-aws-transit-hagw"]

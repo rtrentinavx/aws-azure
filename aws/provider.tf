@@ -7,7 +7,7 @@ terraform {
   }
   backend "s3" {
     bucket = "lab-avx-terraform-state"
-    key    = "transit.state.file"
+    key    = "b.aws.transit.state.file"
     region = "us-east-1"
   }
 }

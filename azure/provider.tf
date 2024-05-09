@@ -11,7 +11,7 @@ terraform {
   }
   backend "s3" {
     bucket = "lab-avx-terraform-state"
-    key    = "azure.transit.state.file"
+    key    = "b.azure.transit.state.file"
     region = "us-east-1"
   }
 }
