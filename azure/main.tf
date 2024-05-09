@@ -120,3 +120,7 @@ module "mc-spoke" {
   vpc_id                           = format("%s:%s:%s", each.value.vpc_id, each.value.resource_group_name, "${data.azurerm_virtual_network.spoke_vnet[each.key].guid}")
   name                             = each.key
 }
+
+#
+# vnets without spokes
+#

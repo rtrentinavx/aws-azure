@@ -1,27 +1,20 @@
-#
-# creates VPC 
-#
-
 module "mc-transit" {
   source                        = "terraform-aviatrix-modules/mc-transit/aviatrix"
   version                       = "2.5.3"
   account                       = var.account
   bgp_ecmp                      = true
   cloud                         = var.cloud
+  cidr                          = var.cidr
   connected_transit             = true
   enable_egress_transit_firenet = false
   enable_encrypt_volume         = true
   enable_firenet                = false
   enable_s2c_rx_balancing       = true
   enable_transit_firenet        = false
-  gw_name                       = var.gw_name
-  gw_subnet                     = var.gw_subnet
-  hagw_subnet                   = var.hagw_subnet
   instance_size                 = var.instance_size
   insane_mode                   = var.insane_mode
   local_as_number               = var.local_as_number
   region                        = var.region
-  use_existing_vpc              = var.use_existing_vpc
   vpc_id                        = element(data.aws_vpcs.vpc.ids, 0)
   #
   # Safe Mechanism: adversting a non-existent prefix 
@@ -109,18 +102,19 @@ module "mc-spoke" {
   version                          = "1.6.9"
   account                          = each.value.account
   attached                         = each.value.attached
+  cidr                             = each.value.cidr
   cloud                            = var.cloud
   customized_spoke_vpc_routes      = each.value.customized_spoke_vpc_routes
   enable_max_performance           = each.value.enable_max_performance
-  gw_subnet                        = each.value.gw_subnet
-  hagw_subnet                      = each.value.hagw_subnet
   included_advertised_spoke_routes = each.value.included_advertised_spoke_routes
   insane_mode                      = each.value.insane_mode
-  inspection                       = each.value.inspection
   instance_size                    = each.value.spoke_instance_size
   region                           = var.region
   transit_gw                       = module.mc-transit.transit_gateway.gw_name
-  use_existing_vpc                 = true
   vpc_id                           = each.value.vpc_id
   name                             = each.key
 }
+
+#
+# vpcs without spokes 
+#

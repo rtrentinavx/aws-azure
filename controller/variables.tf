@@ -1,0 +1,17 @@
+variable "controller_name" { type = string }
+variable "copilot_name" { type = string }
+variable "avx_controller_admin_email" { type = string }
+variable "avx_controller_admin_password" { type = string }
+variable "account_email" { type = string }
+variable "access_account_name" { type = string }
+variable "aviatrix_customer_id" { type = string }
+variable "controller_virtual_machine_size" { type = string }
+variable "location" { type = string }
+variable "resource_group_name" { type = string }
+variable "vnet_name" { type = string }
+variable "subnet_name" { type = string }
+variable "copilot_virtual_machine_size" { type = string }
+variable "default_data_disk_size" { type = string }
+variable "virtual_machine_admin_username" { type = string }
+variable "virtual_machine_admin_password" { type = string }
+variable "incoming_ssl_cidr" { type = list(string) }

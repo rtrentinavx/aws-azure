@@ -5,10 +5,11 @@ terraform {
       version = "3.1.4"
     }
   }
-  backend "s3" {
-    bucket = "lab-avx-terraform-state"
-    key    = "b.aws.transit.state.file"
-    region = "us-east-1"
+  backend "azurerm" {
+    resource_group_name  = "avx-mgmt-rg"  
+    storage_account_name = "labtestazuretstg"                      
+    container_name       = "tfstate"                      
+    key                  = "aws.terraform.tfstate"       
   }
 }
 provider "aws" {
