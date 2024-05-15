@@ -3,6 +3,7 @@ variable "bgp_manual_spoke_advertise_cidrs" { type = string }
 variable "cidr" { type = string }
 variable "cloud" { type = string }
 variable "controller_ip" { type = string }
+variable create_transit_vpc { type = bool }
 # variable "gw_name" { type = string }
 # variable "gw_subnet" { type = string }
 # variable "hagw_subnet" { type = string }

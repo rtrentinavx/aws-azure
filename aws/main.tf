@@ -1,4 +1,22 @@
+locals {
+  region = var.region
+  azs      = slice(data.aws_availability_zones.available.names, 0, 2)
+}
+#
+# vpc
+#
+resource "aws_vpc" "vpc" {
+  count = var.create_transit_vpc ? 1 : 0 
+  cidr_block = var.cidr
+  tags = {
+    Name = var.vpc_name
+  }
+}
+#
+# Transit 
+#
 module "mc-transit" {
+  depends_on = [ data.aws_vpcs.vpc ]
   source                        = "terraform-aviatrix-modules/mc-transit/aviatrix"
   version                       = "2.5.3"
   account                       = var.account
@@ -15,26 +33,32 @@ module "mc-transit" {
   insane_mode                   = var.insane_mode
   local_as_number               = var.local_as_number
   region                        = var.region
-  vpc_id                        = element(data.aws_vpcs.vpc.ids, 0)
+  vpc_id                        = var.create_transit_vpc ? aws_vpc.vpc[0].id : data.aws_vpcs.vpc[0].ids[0]
   #
   # Safe Mechanism: adversting a non-existent prefix 
   #
   bgp_manual_spoke_advertise_cidrs = var.bgp_manual_spoke_advertise_cidrs
-  enable_preserve_as_path          = true
+  enable_preserve_as_path          = false
 }
+#
+# TGW
+#
+resource "aws_ec2_transit_gateway" "tgw" {
+  amazon_side_asn             = var.tgw_asn
+  transit_gateway_cidr_blocks = var.tgw_cidr
+}
+#
+# BGPoGRE 
+#
 resource "aws_route" "route" {
   route_table_id         = data.aws_route_table.route_table.id
   destination_cidr_block = element(var.tgw_cidr, 0)
   transit_gateway_id     = aws_ec2_transit_gateway.tgw.id
 }
-resource "aws_ec2_transit_gateway" "tgw" {
-  amazon_side_asn             = var.tgw_asn
-  transit_gateway_cidr_blocks = var.tgw_cidr
-}
 resource "aws_ec2_transit_gateway_vpc_attachment" "attachment" {
   subnet_ids         = [data.aws_subnet.gw_subnet.id, data.aws_subnet.hagw_subnet.id]
   transit_gateway_id = aws_ec2_transit_gateway.tgw.id
-  vpc_id             = data.aws_vpcs.vpc.ids[0]
+  vpc_id             =  var.create_transit_vpc ? aws_vpc.vpc[0].id : data.aws_vpcs.vpc[0].ids[0]
 }
 resource "aws_ec2_transit_gateway_connect" "connect" {
   transport_attachment_id = aws_ec2_transit_gateway_vpc_attachment.attachment.id
@@ -65,7 +89,7 @@ resource "aws_ec2_transit_gateway_connect_peer" "ha_connect_peer-2" {
   transit_gateway_attachment_id = aws_ec2_transit_gateway_connect.connect.id
 }
 resource "aviatrix_spoke_external_device_conn" "external-1" {
-  vpc_id                  = data.aws_vpcs.vpc.ids[0]
+  vpc_id                  =  var.create_transit_vpc ? aws_vpc.vpc[0].id : data.aws_vpcs.vpc[0].ids[0]
   connection_name         = "external-${module.mc-transit.transit_gateway.gw_name}-1"
   gw_name                 = module.mc-transit.transit_gateway.gw_name
   remote_gateway_ip       = "${aws_ec2_transit_gateway_connect_peer.connect_peer-1.transit_gateway_address}, ${aws_ec2_transit_gateway_connect_peer.ha_connect_peer-1.transit_gateway_address}"
@@ -81,7 +105,7 @@ resource "aviatrix_spoke_external_device_conn" "external-1" {
   #manual_bgp_advertised_cidrs = [ ]
 }
 resource "aviatrix_spoke_external_device_conn" "external-2" {
-  vpc_id                  = data.aws_vpcs.vpc.ids[0]
+  vpc_id                  =  var.create_transit_vpc ? aws_vpc.vpc[0].id : data.aws_vpcs.vpc[0].ids[0]
   connection_name         = "external-${module.mc-transit.transit_gateway.gw_name}-2"
   gw_name                 = module.mc-transit.transit_gateway.gw_name
   remote_gateway_ip       = "${aws_ec2_transit_gateway_connect_peer.connect_peer-2.transit_gateway_address}, ${aws_ec2_transit_gateway_connect_peer.ha_connect_peer-2.transit_gateway_address}"
@@ -114,7 +138,15 @@ module "mc-spoke" {
   vpc_id                           = each.value.vpc_id
   name                             = each.key
 }
-
 #
 # vpcs without spokes 
 #
+# resource "aws_ec2_transit_gateway_vpc_attachment" "attachment" {
+#   subnet_ids         = [data.aws_subnet.gw_subnet.id, data.aws_subnet.hagw_subnet.id]
+#   transit_gateway_id = aws_ec2_transit_gateway.tgw.id
+#   vpc_id             = data.aws_vpcs.vpc.ids[0]
+# }
+# resource "aws_ec2_transit_gateway_connect" "connect" {
+#   transport_attachment_id = aws_ec2_transit_gateway_vpc_attachment.attachment.id
+#   transit_gateway_id      = aws_ec2_transit_gateway.tgw.id
+# }
