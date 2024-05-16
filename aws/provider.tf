@@ -6,10 +6,10 @@ terraform {
     }
   }
   backend "azurerm" {
-    resource_group_name  = "avx-mgmt-rg"  
-    storage_account_name = "labtestazuretstg"                      
-    container_name       = "tfstate"                      
-    key                  = "aws.terraform.tfstate"       
+    resource_group_name  = "avx-mgmt-rg"
+    storage_account_name = "labtestazuretstg"
+    container_name       = "tfstate"
+    key                  = "aws.terraform.tfstate"
   }
 }
 provider "aws" {
