@@ -6,6 +6,7 @@ variable "controller_ip" { type = string }
 variable "create_tgw" { type = string }
 variable "instance_size" { type = string }
 variable "local_as_number" { type = string }
+variable name { type = string }
 variable "password" { type = string }
 variable "region" { type = string }
 variable "username" { type = string }
@@ -22,7 +23,6 @@ variable "spokes" {
     spoke_instance_size              = string
     included_advertised_spoke_routes = string
     region                           = string
-    vpc_id                           = string
   }))
 }
 variable "vpcs_without_spokes" {

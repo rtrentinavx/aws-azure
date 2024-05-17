@@ -17,12 +17,13 @@ module "mc-transit" {
   instance_size                 = var.instance_size
   insane_mode                   = true
   local_as_number               = var.local_as_number
+  name = var.name 
   region                        = var.region
   #
   # Safe Mechanism: adversting a non-existent prefix 
   #
   bgp_manual_spoke_advertise_cidrs = var.bgp_manual_spoke_advertise_cidrs
-  enable_preserve_as_path          = false
+  enable_preserve_as_path          = true
 }
 #
 # TGW
@@ -75,7 +76,7 @@ resource "aws_ec2_transit_gateway_connect_peer" "ha_connect_peer-2" {
 }
 resource "aviatrix_spoke_external_device_conn" "external-1" {
   vpc_id                  = module.mc-transit.vpc.vpc_id
-  connection_name         = "external-${module.mc-transit.transit_gateway.gw_name}-1"
+  connection_name         = "external-${var.create_tgw ? aws_ec2_transit_gateway.tgw[0].id : data.aws_ec2_transit_gateway.tgw[0].id}-1"
   gw_name                 = module.mc-transit.transit_gateway.gw_name
   remote_gateway_ip       = "${aws_ec2_transit_gateway_connect_peer.connect_peer-1.transit_gateway_address}, ${aws_ec2_transit_gateway_connect_peer.ha_connect_peer-1.transit_gateway_address}"
   direct_connect          = true
@@ -91,7 +92,7 @@ resource "aviatrix_spoke_external_device_conn" "external-1" {
 }
 resource "aviatrix_spoke_external_device_conn" "external-2" {
   vpc_id                  = module.mc-transit.vpc.vpc_id
-  connection_name         = "external-${module.mc-transit.transit_gateway.gw_name}-2"
+  connection_name         = "external-${var.create_tgw ? aws_ec2_transit_gateway.tgw[0].id : data.aws_ec2_transit_gateway.tgw[0].id}-2"
   gw_name                 = module.mc-transit.transit_gateway.gw_name
   remote_gateway_ip       = "${aws_ec2_transit_gateway_connect_peer.connect_peer-2.transit_gateway_address}, ${aws_ec2_transit_gateway_connect_peer.ha_connect_peer-2.transit_gateway_address}"
   direct_connect          = true
@@ -123,15 +124,34 @@ module "mc-spoke" {
   instance_size                    = each.value.spoke_instance_size
   region                           = var.region
   transit_gw                       = module.mc-transit.transit_gateway.gw_name
-  vpc_id                           = each.value.vpc_id
   name                             = each.key
 }
 #
 # vpcs without spokes 
 #
-resource "aws_ec2_transit_gateway_vpc_attachment" "attachment" {
+resource "aws_ec2_transit_gateway_vpc_attachment" "vpcs_without_spokes_attachment" {
   for_each           = var.vpcs_without_spokes
   subnet_ids         = each.value.subnet_ids
   transit_gateway_id = var.create_tgw ? aws_ec2_transit_gateway.tgw[0].id : data.aws_ec2_transit_gateway.tgw[0].id
   vpc_id             = each.value.vpc_id
 }
+# resource "aws_route" "r10" {
+#   for_each = {
+#     for vpc_id, _ in var.vpcs_without_spokes : vpc_id => data.aws_route_tables.rts[vpc_id].ids
+#   }
+#   route_table_id         = each.value
+#   destination_cidr_block = "10.0.0.0/8"
+#   transit_gateway_id     = var.create_tgw ? aws_ec2_transit_gateway.tgw[0].id : data.aws_ec2_transit_gateway.tgw[0].id
+# }
+# resource "aws_route" "r172" {
+#   count                     = length(data.aws_route_tables.rts.ids)
+#   route_table_id            = tolist(data.aws_route_tables.rts.ids)[count.index]
+#   destination_cidr_block    = "172.16.0.0/12"
+#   transit_gateway_id = var.create_tgw ? aws_ec2_transit_gateway.tgw[0].id : data.aws_ec2_transit_gateway.tgw[0].id
+# }
+# resource "aws_route" "r192" {
+#   count                     = length(data.aws_route_tables.rts.ids)
+#   route_table_id            = tolist(data.aws_route_tables.rts.ids)[count.index]
+#   destination_cidr_block    = "192.168.0.0/16"
+#   transit_gateway_id = var.create_tgw ? aws_ec2_transit_gateway.tgw[0].id : data.aws_ec2_transit_gateway.tgw[0].id
+# }
