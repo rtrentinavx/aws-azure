@@ -1,3 +1,12 @@
+locals {
+  rtbs = flatten(
+    [
+      for vpc_key, vpc_data in var.vpcs_without_spokes : [
+        for rtb_id in data.aws_route_tables.rts[vpc_data.vpc_id].ids : [rtb_id]
+      ]
+    ]
+  )
+}
 #
 # Transit 
 #
@@ -135,23 +144,21 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "vpcs_without_spokes_attachmen
   transit_gateway_id = var.create_tgw ? aws_ec2_transit_gateway.tgw[0].id : data.aws_ec2_transit_gateway.tgw[0].id
   vpc_id             = each.value.vpc_id
 }
-# resource "aws_route" "r10" {
-#   for_each = {
-#     for vpc_id, _ in var.vpcs_without_spokes : vpc_id => data.aws_route_tables.rts[vpc_id].ids
-#   }
-#   route_table_id         = each.value
-#   destination_cidr_block = "10.0.0.0/8"
-#   transit_gateway_id     = var.create_tgw ? aws_ec2_transit_gateway.tgw[0].id : data.aws_ec2_transit_gateway.tgw[0].id
-# }
-# resource "aws_route" "r172" {
-#   count                     = length(data.aws_route_tables.rts.ids)
-#   route_table_id            = tolist(data.aws_route_tables.rts.ids)[count.index]
-#   destination_cidr_block    = "172.16.0.0/12"
-#   transit_gateway_id = var.create_tgw ? aws_ec2_transit_gateway.tgw[0].id : data.aws_ec2_transit_gateway.tgw[0].id
-# }
-# resource "aws_route" "r192" {
-#   count                     = length(data.aws_route_tables.rts.ids)
-#   route_table_id            = tolist(data.aws_route_tables.rts.ids)[count.index]
-#   destination_cidr_block    = "192.168.0.0/16"
-#   transit_gateway_id = var.create_tgw ? aws_ec2_transit_gateway.tgw[0].id : data.aws_ec2_transit_gateway.tgw[0].id
-# }
+resource "aws_route" "r10" {
+  for_each = toset(local.rtbs)
+  route_table_id         = each.value 
+  destination_cidr_block = "10.0.0.0/8"
+  transit_gateway_id     = var.create_tgw ? aws_ec2_transit_gateway.tgw[0].id : data.aws_ec2_transit_gateway.tgw[0].id
+}
+resource "aws_route" "r172" {
+  for_each = toset(local.rtbs)
+  route_table_id         = each.value 
+  destination_cidr_block = "172.16.0.0/12"
+  transit_gateway_id     = var.create_tgw ? aws_ec2_transit_gateway.tgw[0].id : data.aws_ec2_transit_gateway.tgw[0].id
+}
+resource "aws_route" "r192" {
+  for_each = toset(local.rtbs)
+  route_table_id         = each.value 
+  destination_cidr_block = "192.168.0.0/16"
+  transit_gateway_id     = var.create_tgw ? aws_ec2_transit_gateway.tgw[0].id : data.aws_ec2_transit_gateway.tgw[0].id
+}
