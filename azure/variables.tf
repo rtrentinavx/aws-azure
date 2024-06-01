@@ -1,21 +1,30 @@
 variable "account" { type = string }
-variable "ars_virtual_network_name" { type = string }
-variable "ars_resource_group_name" { type = string }
+variable "ars_vnet" {
+  type    = string
+  default = ""
+}
+variable "ars_virtual_network_name" {
+  type    = string
+  default = ""
+}
+variable "ars_resource_group_name" {
+  type    = string
+  default = ""
+}
+variable "ars_cidr" { type = string }
 variable "bgp_manual_spoke_advertise_cidrs" { type = string }
 variable "cloud" { type = string }
 variable "controller_ip" { type = string }
-variable "gw_name" { type = string }
-variable "gw_subnet" { type = string }
-variable "hagw_subnet" { type = string }
 variable "insane_mode" { type = bool }
 variable "instance_size" { type = string }
 variable "local_as_number" { type = string }
+variable "name" { type = string }
 variable "password" { type = string }
 variable "region" { type = string }
 variable "resource_group" { type = string }
-variable "use_existing_vpc" { type = bool }
+variable "transit_cidr" { type = string }
 variable "username" { type = string }
-variable "vnet_name" { type = string }
+variable "vpn_sku" { type = string }
 variable "spokes" {
   type = map(object({
     account                          = string

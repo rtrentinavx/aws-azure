@@ -162,3 +162,10 @@ resource "aws_route" "r192" {
   destination_cidr_block = "192.168.0.0/16"
   transit_gateway_id     = var.create_tgw ? aws_ec2_transit_gateway.tgw[0].id : data.aws_ec2_transit_gateway.tgw[0].id
 }
+#
+# S2C 
+#
+
+#
+# SNAT/DNAT 
+#

@@ -10,10 +10,10 @@ terraform {
     }
   }
   backend "azurerm" {
-    resource_group_name  = "avx-mgmt-rg"  
-    storage_account_name = "labtestazuretstg"                      
-    container_name       = "tfstate"                      
-    key                  = "east.terraform.tfstate"       
+    resource_group_name  = "avx-mgmt-rg"
+    storage_account_name = "labtestazuretstg"
+    container_name       = "tfstate"
+    key                  = "east.terraform.tfstate"
   }
 }
 provider "aviatrix" {
@@ -22,6 +22,9 @@ provider "aviatrix" {
   password      = var.password
 }
 provider "azurerm" {
-  features {}
+  features {
+    resource_group {
+      prevent_deletion_if_contains_resources = false
+    }
+  }
 }
-
