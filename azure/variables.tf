@@ -21,10 +21,10 @@ variable "local_as_number" { type = string }
 variable "name" { type = string }
 variable "password" { type = string }
 variable "region" { type = string }
-variable "resource_group" { 
-  type = string 
+variable "resource_group" {
+  type    = string
   default = ""
-  }
+}
 variable "transit_cidr" { type = string }
 variable "username" { type = string }
 variable "vpn_sku" { type = string }
@@ -35,13 +35,13 @@ variable "spokes" {
     customized_spoke_vpc_routes      = string
     enable_max_performance           = bool
     gw_subnet                        = string
+    vnet_guid                        = string
     hagw_subnet                      = string
-    insane_mode                      = bool
     spoke_instance_size              = string
     inspection                       = bool
     included_advertised_spoke_routes = string
     region                           = string
     resource_group_name              = string
-    vpc_id                           = string
+    vnet_name                        = string
   }))
 }
