@@ -3,7 +3,7 @@ resource "azurerm_resource_group" "ars_resource_group" {
   location = var.region
 }
 resource "azurerm_resource_group" "resource_group" {
-  name     = var.ars_resource_group_name != "" ? var.ars_resource_group_name : "${var.name}-rg"
+  name     = var.resource_group != "" ? var.resource_group : "${var.name}-rg"
   location = var.region
 }
 module "ars-vnet" {
@@ -13,20 +13,12 @@ module "ars-vnet" {
   vnet_location       = var.region
   address_space       = [var.ars_cidr]
   subnet_names        = ["GatewaySubnet", "RouteServerSubnet"]
-  subnet_prefixes     = cidrsubnets("${var.ars_cidr}", 3, 4)
+  subnet_prefixes     = cidrsubnets("${var.ars_cidr}", 3, 3)
   use_for_each        = false
   vnet_name           = var.ars_vnet != "" ? var.ars_vnet : "${var.name}-ars"
 }
 resource "azurerm_public_ip" "pip-vng" {
-  name                = "pip-vng-${module.ars-vnet.vnet_name}-1"
-  location            = var.region
-  resource_group_name = azurerm_resource_group.ars_resource_group.name
-  allocation_method   = "Static"
-  sku                 = "Standard"
-  zones               = ["1", "2", "3"]
-}
-resource "azurerm_public_ip" "pip-vng-active_active" {
-  name                = "pip-vng-${module.ars-vnet.vnet_name}-2"
+  name                = "pip-vng-${var.name}"
   location            = var.region
   resource_group_name = azurerm_resource_group.ars_resource_group.name
   allocation_method   = "Static"
@@ -34,42 +26,33 @@ resource "azurerm_public_ip" "pip-vng-active_active" {
   zones               = ["1", "2", "3"]
 }
 resource "azurerm_public_ip" "pip-ars" {
-  name                = "pip-ars-${module.ars-vnet.vnet_name}"
+  name                = "pip-ars-${var.name}"
   location            = var.region
   resource_group_name = azurerm_resource_group.ars_resource_group.name
   allocation_method   = "Static"
   sku                 = "Standard"
 }
 resource "azurerm_virtual_network_gateway" "vng" {
-  name                = "vng-${module.ars-vnet.vnet_name}"
+  name                = "vng-${var.name}"
   location            = var.region
   resource_group_name = azurerm_resource_group.ars_resource_group.name
-  type                = "Vpn"
-  vpn_type            = "RouteBased"
-  active_active       = true
+  type                = "ExpressRoute"
   enable_bgp          = false
   sku                 = var.vpn_sku
-  generation          = "Generation2"
   ip_configuration {
     name                          = "default"
     public_ip_address_id          = azurerm_public_ip.pip-vng.id
     private_ip_address_allocation = "Dynamic"
-    subnet_id                     = data.azurerm_subnet.gateway-subnet.id
-  }
-  ip_configuration {
-    name                          = "activeActive"
-    public_ip_address_id          = azurerm_public_ip.pip-vng-active_active.id
-    private_ip_address_allocation = "Dynamic"
-    subnet_id                     = data.azurerm_subnet.gateway-subnet.id
+    subnet_id                     = module.ars-vnet.vnet_subnets_name_id["GatewaySubnet"]
   }
 }
 resource "azurerm_route_server" "ars" {
-  name                             = "ars-${module.ars-vnet.vnet_name}"
+  name                             = "ars-${var.name}"
   location                         = var.region
   resource_group_name              = azurerm_resource_group.ars_resource_group.name
   sku                              = "Standard"
   public_ip_address_id             = azurerm_public_ip.pip-ars.id
-  subnet_id                        = data.azurerm_subnet.RouteServerSubnet-subnet.id
+  subnet_id                        = module.ars-vnet.vnet_subnets_name_id["RouteServerSubnet"]
   branch_to_branch_traffic_enabled = true
 }
 module "mc-transit" {
@@ -87,7 +70,7 @@ module "mc-transit" {
   local_as_number          = var.local_as_number
   name                     = var.name
   region                   = var.region
-  resource_group           = var.resource_group != "" ? var.resource_group : ""
+  resource_group           = azurerm_resource_group.resource_group.name
   #
   # Safe Mechanism: adversting a non-existent prefix 
   #
@@ -95,6 +78,7 @@ module "mc-transit" {
   enable_preserve_as_path          = true
 }
 resource "azurerm_virtual_network_peering" "transit_to_ars-virtual_network_peering" {
+  depends_on = [ azurerm_route_server.ars ]
   name                         = "transit-to-ars"
   resource_group_name          = split(":", module.mc-transit.transit_gateway.vpc_id)[1]
   virtual_network_name         = split(":", module.mc-transit.transit_gateway.vpc_id)[0]
@@ -104,6 +88,7 @@ resource "azurerm_virtual_network_peering" "transit_to_ars-virtual_network_peeri
   use_remote_gateways          = true
 }
 resource "azurerm_virtual_network_peering" "ars_to_transit-virtual_network_peering" {
+    depends_on = [ azurerm_route_server.ars ]
   name                         = "ars-to-transit"
   resource_group_name          = var.ars_resource_group_name != "" ? var.ars_resource_group_name : "${var.name}-ars-rg"
   virtual_network_name         = module.ars-vnet.vnet_name
@@ -126,7 +111,7 @@ resource "aviatrix_transit_external_device_conn" "transit_to_ars" {
   ha_enabled                = true
   local_lan_ip              = module.mc-transit.transit_gateway.bgp_lan_ip_list[0]
   remote_lan_ip             = tolist(azurerm_route_server.ars.virtual_router_ips)[0]
-  remote_vpc_name           = "${module.ars-vnet.vnet_name}:${azurerm_resource_group.ars_resource_group.name}:${module.ars-vnet.vnet_guid}"
+  remote_vpc_name           = "${module.ars-vnet.vnet_name}:${azurerm_resource_group.ars_resource_group.name}:${data.azurerm_subscription.subscription.subscription_id}"
   vpc_id                    = module.mc-transit.transit_gateway.vpc_id
   tunnel_protocol           = "LAN"
 }

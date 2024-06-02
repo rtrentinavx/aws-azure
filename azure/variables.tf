@@ -21,7 +21,10 @@ variable "local_as_number" { type = string }
 variable "name" { type = string }
 variable "password" { type = string }
 variable "region" { type = string }
-variable "resource_group" { type = string }
+variable "resource_group" { 
+  type = string 
+  default = ""
+  }
 variable "transit_cidr" { type = string }
 variable "username" { type = string }
 variable "vpn_sku" { type = string }
