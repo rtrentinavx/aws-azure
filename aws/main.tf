@@ -83,7 +83,7 @@ resource "aws_ec2_transit_gateway_connect_peer" "ha_connect_peer-2" {
   peer_address                  = module.mc-transit.transit_gateway.ha_private_ip
   transit_gateway_attachment_id = aws_ec2_transit_gateway_connect.connect.id
 }
-resource "aviatrix_spoke_external_device_conn" "external-1" {
+resource "aviatrix_transit_external_device_conn" "external-1" {
   vpc_id                  = module.mc-transit.vpc.vpc_id
   connection_name         = "external-${var.create_tgw ? aws_ec2_transit_gateway.tgw[0].id : data.aws_ec2_transit_gateway.tgw[0].id}-1"
   gw_name                 = module.mc-transit.transit_gateway.gw_name
@@ -98,8 +98,9 @@ resource "aviatrix_spoke_external_device_conn" "external-1" {
   custom_algorithms       = false
   phase1_local_identifier = null
   #manual_bgp_advertised_cidrs = [ ]
+  enable_jumbo_frame = true 
 }
-resource "aviatrix_spoke_external_device_conn" "external-2" {
+resource "aviatrix_transit_external_device_conn" "external-2" {
   vpc_id                  = module.mc-transit.vpc.vpc_id
   connection_name         = "external-${var.create_tgw ? aws_ec2_transit_gateway.tgw[0].id : data.aws_ec2_transit_gateway.tgw[0].id}-2"
   gw_name                 = module.mc-transit.transit_gateway.gw_name
@@ -114,6 +115,7 @@ resource "aviatrix_spoke_external_device_conn" "external-2" {
   custom_algorithms       = false
   phase1_local_identifier = null
   #manual_bgp_advertised_cidrs = [ ]
+  enable_jumbo_frame = true 
 }
 #
 # vpcs witht spokes

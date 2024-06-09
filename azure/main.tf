@@ -150,7 +150,5 @@ module "mc-spoke" {
   name                             = each.key
 }
 #
-# vnets without spokes 
-#
-# Current peerings need to be deleted before creating connections to the new transit 
+# vnets without spokes: current peerings need to be deleted before creating connections to the new transit 
 #
