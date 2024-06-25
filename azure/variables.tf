@@ -26,7 +26,7 @@ variable "resource_group" {
   default = ""
 }
 variable "transit_cidr" { type = string }
-variable "tags" { type = map(string)}
+variable "tags" { type = map(string) }
 variable "username" { type = string }
 variable "vpn_sku" { type = string }
 variable "spokes" {

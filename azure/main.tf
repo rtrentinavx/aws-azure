@@ -1,12 +1,12 @@
 resource "azurerm_resource_group" "ars_resource_group" {
   name     = var.ars_resource_group_name != "" ? var.ars_resource_group_name : "${var.name}-ars-rg"
   location = var.region
-  tags = var.tags
+  tags     = var.tags
 }
 resource "azurerm_resource_group" "resource_group" {
   name     = var.resource_group != "" ? var.resource_group : "${var.name}-rg"
   location = var.region
-  tags = var.tags
+  tags     = var.tags
 }
 module "ars-vnet" {
   source              = "Azure/vnet/azurerm"
@@ -18,7 +18,7 @@ module "ars-vnet" {
   subnet_prefixes     = cidrsubnets("${var.ars_cidr}", 3, 3)
   use_for_each        = false
   vnet_name           = var.ars_vnet != "" ? var.ars_vnet : "${var.name}-ars"
-  tags = var.tags
+  tags                = var.tags
 }
 resource "azurerm_public_ip" "pip-vng" {
   name                = "pip-vng-${var.name}"
@@ -27,7 +27,7 @@ resource "azurerm_public_ip" "pip-vng" {
   allocation_method   = "Static"
   sku                 = "Standard"
   zones               = ["1", "2", "3"]
-  tags = var.tags
+  tags                = var.tags
 }
 resource "azurerm_public_ip" "pip-ars" {
   name                = "pip-ars-${var.name}"
@@ -35,7 +35,7 @@ resource "azurerm_public_ip" "pip-ars" {
   resource_group_name = azurerm_resource_group.ars_resource_group.name
   allocation_method   = "Static"
   sku                 = "Standard"
-  tags = var.tags
+  tags                = var.tags
 }
 resource "azurerm_virtual_network_gateway" "vng" {
   name                = "vng-${var.name}"
@@ -44,7 +44,7 @@ resource "azurerm_virtual_network_gateway" "vng" {
   type                = "ExpressRoute"
   enable_bgp          = false
   sku                 = var.vpn_sku
-  tags = var.tags
+  tags                = var.tags
   ip_configuration {
     name                          = "default"
     public_ip_address_id          = azurerm_public_ip.pip-vng.id
@@ -60,7 +60,7 @@ resource "azurerm_route_server" "ars" {
   public_ip_address_id             = azurerm_public_ip.pip-ars.id
   subnet_id                        = module.ars-vnet.vnet_subnets_name_id["RouteServerSubnet"]
   branch_to_branch_traffic_enabled = true
-  tags = var.tags
+  tags                             = var.tags
 }
 module "mc-transit" {
   source                   = "terraform-aviatrix-modules/mc-transit/aviatrix"
@@ -83,7 +83,7 @@ module "mc-transit" {
   #
   bgp_manual_spoke_advertise_cidrs = var.bgp_manual_spoke_advertise_cidrs
   enable_preserve_as_path          = true
-  tags = var.tags
+  tags                             = var.tags
 }
 resource "azurerm_virtual_network_peering" "transit_to_ars-virtual_network_peering" {
   depends_on                   = [azurerm_route_server.ars]
@@ -153,9 +153,9 @@ module "mc-spoke" {
   region                           = var.region
   resource_group                   = each.value.resource_group_name
   transit_gw                       = module.mc-transit.transit_gateway.gw_name
-  tags = var.tags
+  tags                             = var.tags
   use_existing_vpc                 = true
-  vpc_id                           = format("%s:%s:%s", each.value.vnet_name, each.value.resource_group_name, each.value.vpc_guid)
+  vpc_id                           = format("%s:%s:%s", each.value.vnet_name, each.value.resource_group_name, each.value.vnet_guid)
   name                             = each.key
 }
 #

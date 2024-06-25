@@ -26,14 +26,14 @@ module "mc-transit" {
   instance_size                 = var.instance_size
   insane_mode                   = true
   local_as_number               = var.local_as_number
-  name = var.name 
+  name                          = var.name
   region                        = var.region
   #
   # Safe Mechanism: adversting a non-existent prefix 
   #
   bgp_manual_spoke_advertise_cidrs = var.bgp_manual_spoke_advertise_cidrs
   enable_preserve_as_path          = true
-  tags = var.tags 
+  tags                             = var.tags
 }
 #
 # TGW
@@ -42,7 +42,7 @@ resource "aws_ec2_transit_gateway" "tgw" {
   count                       = var.create_tgw ? 1 : 0
   amazon_side_asn             = var.tgw_asn
   transit_gateway_cidr_blocks = var.tgw_cidr
-  tags = var.tags
+  tags                        = var.tags
 }
 #
 # BGPoGRE 
@@ -100,7 +100,7 @@ resource "aviatrix_transit_external_device_conn" "external-1" {
   custom_algorithms       = false
   phase1_local_identifier = null
   #manual_bgp_advertised_cidrs = [ ]
-  enable_jumbo_frame = true 
+  enable_jumbo_frame = true
 }
 resource "aviatrix_transit_external_device_conn" "external-2" {
   vpc_id                  = module.mc-transit.vpc.vpc_id
@@ -117,7 +117,7 @@ resource "aviatrix_transit_external_device_conn" "external-2" {
   custom_algorithms       = false
   phase1_local_identifier = null
   #manual_bgp_advertised_cidrs = [ ]
-  enable_jumbo_frame = true 
+  enable_jumbo_frame = true
 }
 #
 # vpcs witht spokes
@@ -137,7 +137,7 @@ module "mc-spoke" {
   instance_size                    = each.value.spoke_instance_size
   region                           = var.region
   transit_gw                       = module.mc-transit.transit_gateway.gw_name
-  tags = var.tags
+  tags                             = var.tags
   name                             = each.key
 }
 #
@@ -150,20 +150,20 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "vpcs_without_spokes_attachmen
   vpc_id             = each.value.vpc_id
 }
 resource "aws_route" "r10" {
-  for_each = toset(local.rtbs)
-  route_table_id         = each.value 
+  for_each               = toset(local.rtbs)
+  route_table_id         = each.value
   destination_cidr_block = "10.0.0.0/8"
   transit_gateway_id     = var.create_tgw ? aws_ec2_transit_gateway.tgw[0].id : data.aws_ec2_transit_gateway.tgw[0].id
 }
 resource "aws_route" "r172" {
-  for_each = toset(local.rtbs)
-  route_table_id         = each.value 
+  for_each               = toset(local.rtbs)
+  route_table_id         = each.value
   destination_cidr_block = "172.16.0.0/12"
   transit_gateway_id     = var.create_tgw ? aws_ec2_transit_gateway.tgw[0].id : data.aws_ec2_transit_gateway.tgw[0].id
 }
 resource "aws_route" "r192" {
-  for_each = toset(local.rtbs)
-  route_table_id         = each.value 
+  for_each               = toset(local.rtbs)
+  route_table_id         = each.value
   destination_cidr_block = "192.168.0.0/16"
   transit_gateway_id     = var.create_tgw ? aws_ec2_transit_gateway.tgw[0].id : data.aws_ec2_transit_gateway.tgw[0].id
 }
