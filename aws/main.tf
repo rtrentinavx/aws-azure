@@ -33,6 +33,7 @@ module "mc-transit" {
   #
   bgp_manual_spoke_advertise_cidrs = var.bgp_manual_spoke_advertise_cidrs
   enable_preserve_as_path          = true
+  tags = var.tags 
 }
 #
 # TGW
@@ -41,6 +42,7 @@ resource "aws_ec2_transit_gateway" "tgw" {
   count                       = var.create_tgw ? 1 : 0
   amazon_side_asn             = var.tgw_asn
   transit_gateway_cidr_blocks = var.tgw_cidr
+  tags = var.tags
 }
 #
 # BGPoGRE 
@@ -135,6 +137,7 @@ module "mc-spoke" {
   instance_size                    = each.value.spoke_instance_size
   region                           = var.region
   transit_gw                       = module.mc-transit.transit_gateway.gw_name
+  tags = var.tags
   name                             = each.key
 }
 #

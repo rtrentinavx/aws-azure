@@ -12,6 +12,7 @@ variable "region" { type = string }
 variable "username" { type = string }
 variable "tgw_asn" { type = string }
 variable "tgw_cidr" { type = list(string) }
+variable "tags" { type = map(string)}
 variable "spokes" {
   type = map(object({
     account                          = string
