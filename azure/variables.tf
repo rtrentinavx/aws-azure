@@ -13,7 +13,6 @@ variable "ars_resource_group_name" {
 }
 variable "ars_cidr" { type = string }
 variable "bgp_manual_spoke_advertise_cidrs" { type = string }
-variable "cloud" { type = string }
 variable "controller_ip" { type = string }
 variable "insane_mode" { type = bool }
 variable "instance_size" { type = string }

@@ -69,7 +69,7 @@ module "mc-transit" {
   bgp_ecmp                 = true
   bgp_lan_interfaces_count = 1
   cidr                     = var.transit_cidr
-  cloud                    = var.cloud
+  cloud                    = "azure"
   connected_transit        = true
   enable_bgp_over_lan      = true
   insane_mode              = true
@@ -141,7 +141,7 @@ module "mc-spoke" {
   version                          = "1.6.9"
   account                          = each.value.account
   attached                         = each.value.attached
-  cloud                            = var.cloud
+  cloud                            = "azure"
   customized_spoke_vpc_routes      = each.value.customized_spoke_vpc_routes
   enable_max_performance           = each.value.enable_max_performance
   gw_subnet                        = each.value.gw_subnet

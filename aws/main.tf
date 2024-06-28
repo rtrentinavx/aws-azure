@@ -15,7 +15,7 @@ module "mc-transit" {
   version                       = "2.5.3"
   account                       = var.account
   bgp_ecmp                      = true
-  cloud                         = var.cloud
+  cloud                         = "aws"
   cidr                          = var.cidr
   connected_transit             = true
   enable_egress_transit_firenet = false
@@ -123,15 +123,16 @@ resource "aviatrix_transit_external_device_conn" "external-2" {
 # vpcs witht spokes
 #
 module "mc-spoke" {
+  depends_on                       = [module.mc-transit]
   for_each                         = var.spokes
   source                           = "terraform-aviatrix-modules/mc-spoke/aviatrix"
   version                          = "1.6.9"
   account                          = each.value.account
   attached                         = each.value.attached
   cidr                             = each.value.cidr
-  cloud                            = var.cloud
+  cloud                            = "aws"
   customized_spoke_vpc_routes      = each.value.customized_spoke_vpc_routes
-  enable_max_performance           = each.value.enable_max_performance
+  enable_max_performance           = each.value.insane_mode ? each.value.enable_max_performance : true 
   included_advertised_spoke_routes = each.value.included_advertised_spoke_routes
   insane_mode                      = each.value.insane_mode
   instance_size                    = each.value.spoke_instance_size
@@ -139,6 +140,8 @@ module "mc-spoke" {
   transit_gw                       = module.mc-transit.transit_gateway.gw_name
   tags                             = var.tags
   name                             = each.key
+  enable_bgp                       = each.value.enable_bgp
+  local_as_number                  = each.value.enable_bgp ? each.value.local_as_number : null
 }
 #
 # vpcs without spokes 
@@ -170,7 +173,64 @@ resource "aws_route" "r192" {
 #
 # S2C 
 #
-
+resource "aviatrix_spoke_external_device_conn" "spoke_external_device_conn" {
+  depends_on               = [module.mc-spoke]
+  for_each                 = var.connections
+  vpc_id                   = module.mc-spoke[each.value.gw_name].vpc.vpc_id
+  connection_name          = each.key
+  gw_name                  = each.value.gw_name
+  remote_gateway_ip        = each.value.remote_gateway_ip
+  connection_type          = "static"
+  direct_connect           = false
+  remote_subnet            = each.value.remote_subnet
+  ha_enabled               = false
+  local_tunnel_cidr        = each.value.local_tunnel_cidr
+  remote_tunnel_cidr       = each.value.remote_tunnel_cidr
+  phase1_local_identifier  = null
+  custom_algorithms        = each.value.custom_algorithms
+  phase_1_authentication   = each.value.phase_1_authentication
+  phase_2_authentication   = each.value.phase_2_authentication
+  phase_1_dh_groups        = each.value.phase_1_dh_groups
+  phase_2_dh_groups        = each.value.phase_2_dh_groups
+  phase_1_encryption       = each.value.phase_1_encryption
+  phase_2_encryption       = each.value.phase_2_encryption
+  enable_ikev2             = each.value.enable_ikev2
+  phase1_remote_identifier = each.value.phase1_remote_identifier
+}
 #
 # SNAT/DNAT 
 #
+resource "aviatrix_gateway_snat" "gateway_snat_1" {
+  depends_on = [ aviatrix_spoke_external_device_conn.spoke_external_device_conn ]
+  for_each  = var.custom_nats
+  gw_name   = each.value.gw_name
+  snat_mode = "customized_snat"
+  snat_policy {
+    src_cidr   = each.value.src_cidr
+    dst_cidr   = each.value.dst_cidr
+    protocol   = each.value.protocol
+    connection = "${each.value.connection}@site2cloud"
+    snat_ips   = module.mc-spoke[each.value.gw_name].spoke_gateway.private_ip
+  }
+  snat_policy {
+    src_cidr   = each.value.src_cidr
+    dst_cidr   = each.value.dst_cidr
+    protocol   = each.value.protocol
+    connection = "${each.value.connection}@site2cloud"
+    snat_ips   = module.mc-spoke[each.value.gw_name].spoke_gateway.ha_private_ip
+  }
+  snat_policy {
+    src_cidr   = each.value.dst_cidr
+    dst_cidr   = each.value.src_cidr
+    protocol   = each.value.protocol
+    connection = "${each.value.connection}@site2cloud"
+    snat_ips   = module.mc-spoke[each.value.gw_name].spoke_gateway.private_ip
+  }
+  snat_policy {
+    src_cidr   = each.value.dst_cidr
+    dst_cidr   = each.value.src_cidr
+    protocol   = each.value.protocol
+    connection = "${each.value.connection}@site2cloud"
+    snat_ips   = module.mc-spoke[each.value.gw_name].spoke_gateway.ha_private_ip
+  }
+}
