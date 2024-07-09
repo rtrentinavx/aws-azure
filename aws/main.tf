@@ -132,7 +132,7 @@ module "mc-spoke" {
   cidr                             = each.value.cidr
   cloud                            = "aws"
   customized_spoke_vpc_routes      = each.value.customized_spoke_vpc_routes
-  enable_max_performance           = each.value.insane_mode ? each.value.enable_max_performance : true 
+  enable_max_performance           = each.value.insane_mode ? each.value.enable_max_performance : true
   included_advertised_spoke_routes = each.value.included_advertised_spoke_routes
   insane_mode                      = each.value.insane_mode
   instance_size                    = each.value.spoke_instance_size
@@ -201,36 +201,122 @@ resource "aviatrix_spoke_external_device_conn" "spoke_external_device_conn" {
 # SNAT/DNAT 
 #
 resource "aviatrix_gateway_snat" "gateway_snat_1" {
-  depends_on = [ aviatrix_spoke_external_device_conn.spoke_external_device_conn ]
-  for_each  = var.custom_nats
-  gw_name   = each.value.gw_name
-  snat_mode = "customized_snat"
+    gw_name = "AWS-Partner"
+    snat_mode = "customized_snat"
+    snat_policy {
+        src_cidr = "10.208.112.0/22" 
+        dst_cidr = "100.112.28.0/24"  
+        protocol = "all"
+        connection = "UST-HE-Connection@site2cloud"
+        snat_ips = "100.65.56.1"
+    }
   snat_policy {
-    src_cidr   = each.value.src_cidr
-    dst_cidr   = each.value.dst_cidr
-    protocol   = each.value.protocol
-    connection = "${each.value.connection}@site2cloud"
-    snat_ips   = module.mc-spoke[each.value.gw_name].spoke_gateway.private_ip
-  }
+        src_cidr = "10.209.80.0/20"
+        dst_cidr = "100.112.28.0/24"
+        protocol = "all"
+        connection = "UST-HE-Connection@site2cloud"
+        snat_ips = "100.65.56.1"
+    }
+ snat_policy {
+        src_cidr = "10.208.120.0/22"
+        dst_cidr = "100.112.28.0/24"
+        protocol = "all"
+        connection = "UST-HE-Connection@site2cloud"
+        snat_ips = "100.65.56.1"
+    }
   snat_policy {
-    src_cidr   = each.value.src_cidr
-    dst_cidr   = each.value.dst_cidr
-    protocol   = each.value.protocol
-    connection = "${each.value.connection}@site2cloud"
-    snat_ips   = module.mc-spoke[each.value.gw_name].spoke_gateway.ha_private_ip
-  }
+        src_cidr = "10.209.120.0/22"
+        dst_cidr = "100.112.28.0/24"
+        protocol = "all"
+        connection = "UST-HE-Connection@site2cloud"
+        snat_ips = "100.65.56.1"
+    }
+    snat_policy {
+        src_cidr = "10.209.80.0/20"
+        dst_cidr = "100.112.58.0/24"
+        protocol = "all"
+        connection = "UST-HE-Connection@site2cloud"
+        snat_ips = "100.65.56.3"
+    }
+    snat_policy {
+        src_cidr = "10.208.112.0/22"
+        dst_cidr = "100.112.58.0/24"
+        protocol = "all"
+        connection = "UST-HE-Connection@site2cloud"
+        snat_ips = "100.65.56.3"
+    }
+    snat_policy {
+        src_cidr = "10.208.120.0/22"
+        dst_cidr = "100.112.58.0/24"
+        protocol = "all"
+        connection = "UST-HE-Connection@site2cloud"
+        snat_ips = "100.65.56.3"
+    }
+    snat_policy {
+        src_cidr = "10.209.120.0/22"
+        dst_cidr = "100.112.58.0/24"
+        protocol = "all"
+        connection = "UST-HE-Connection@site2cloud"
+        snat_ips = "100.65.56.3"
+    }
+}
+resource "aviatrix_gateway_snat" "gateway_snat_2" {
+    gw_name = "AWS-Partner-hagw"
+    snat_mode = "customized_snat"
+    snat_policy {
+        src_cidr = "10.208.112.0/22" 
+        dst_cidr = "100.112.28.0/24"  
+        protocol = "all"
+        connection = "UST-HE-Connection@site2cloud"
+        snat_ips = "100.65.56.2"
+    }
   snat_policy {
-    src_cidr   = each.value.dst_cidr
-    dst_cidr   = each.value.src_cidr
-    protocol   = each.value.protocol
-    connection = "${each.value.connection}@site2cloud"
-    snat_ips   = module.mc-spoke[each.value.gw_name].spoke_gateway.private_ip
-  }
+        src_cidr = "10.209.80.0/20"
+        dst_cidr = "100.112.28.0/24"
+        protocol = "all"
+        connection = "UST-HE-Connection@site2cloud"
+        snat_ips = "100.65.56.2"
+    }
+ snat_policy {
+        src_cidr = "10.208.120.0/22"
+        dst_cidr = "100.112.28.0/24"
+        protocol = "all"
+        connection = "UST-HE-Connection@site2cloud"
+        snat_ips = "100.65.56.2"
+    }
   snat_policy {
-    src_cidr   = each.value.dst_cidr
-    dst_cidr   = each.value.src_cidr
-    protocol   = each.value.protocol
-    connection = "${each.value.connection}@site2cloud"
-    snat_ips   = module.mc-spoke[each.value.gw_name].spoke_gateway.ha_private_ip
-  }
+        src_cidr = "10.209.120.0/22"
+        dst_cidr = "100.112.28.0/24"
+        protocol = "all"
+        connection = "UST-HE-Connection@site2cloud"
+        snat_ips = "100.65.56.2"
+    }
+    snat_policy {
+        src_cidr = "10.209.80.0/20"
+        dst_cidr = "100.112.58.0/24"
+        protocol = "all"
+        connection = "UST-HE-Connection@site2cloud"
+        snat_ips = "100.65.56.4"
+    }
+    snat_policy {
+        src_cidr = "10.208.112.0/22"
+        dst_cidr = "100.112.58.0/24"
+        protocol = "all"
+        connection = "UST-HE-Connection@site2cloud"
+        snat_ips = "100.65.56.4"
+    }
+    snat_policy {
+        src_cidr = "10.208.120.0/22"
+        dst_cidr = "100.112.58.0/24"
+        protocol = "all"
+        connection = "UST-HE-Connection@site2cloud"
+        snat_ips = "100.65.56.4"
+    }
+    snat_policy {
+        src_cidr = "10.209.120.0/22"
+        dst_cidr = "100.112.58.0/24"
+        protocol = "all"
+        connection = "UST-HE-Connection@site2cloud"
+        snat_ips = "100.65.56.4"
+    }
 }
