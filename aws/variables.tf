@@ -15,4 +15,3 @@ variable "tags" { type = map(string) }
 variable "spokes" {}
 variable "vpcs_without_spokes" {}
 variable "connections" {}
-variable "custom_nats" {}
