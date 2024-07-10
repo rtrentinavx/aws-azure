@@ -201,122 +201,122 @@ resource "aviatrix_spoke_external_device_conn" "spoke_external_device_conn" {
 # SNAT/DNAT 
 #
 resource "aviatrix_gateway_snat" "gateway_snat_1" {
-    gw_name = "AWS-Partner"
+    gw_name =  var.custom_snat_gw
     snat_mode = "customized_snat"
     snat_policy {
         src_cidr = "10.208.112.0/22" 
         dst_cidr = "100.112.28.0/24"  
         protocol = "all"
-        connection = "UST-HE-Connection@site2cloud"
+        connection = "${var.custom_snat_connection_name}@site2cloud"
         snat_ips = "100.65.56.1"
     }
   snat_policy {
         src_cidr = "10.209.80.0/20"
         dst_cidr = "100.112.28.0/24"
         protocol = "all"
-        connection = "UST-HE-Connection@site2cloud"
+        connection = "${var.custom_snat_connection_name}@site2cloud"
         snat_ips = "100.65.56.1"
     }
  snat_policy {
         src_cidr = "10.208.120.0/22"
         dst_cidr = "100.112.28.0/24"
         protocol = "all"
-        connection = "UST-HE-Connection@site2cloud"
+        connection = "${var.custom_snat_connection_name}@site2cloud"
         snat_ips = "100.65.56.1"
     }
   snat_policy {
         src_cidr = "10.209.120.0/22"
         dst_cidr = "100.112.28.0/24"
         protocol = "all"
-        connection = "UST-HE-Connection@site2cloud"
+        connection = "${var.custom_snat_connection_name}@site2cloud"
         snat_ips = "100.65.56.1"
     }
     snat_policy {
         src_cidr = "10.209.80.0/20"
         dst_cidr = "100.112.58.0/24"
         protocol = "all"
-        connection = "UST-HE-Connection@site2cloud"
+        connection = "${var.custom_snat_connection_name}@site2cloud"
         snat_ips = "100.65.56.3"
     }
     snat_policy {
         src_cidr = "10.208.112.0/22"
         dst_cidr = "100.112.58.0/24"
         protocol = "all"
-        connection = "UST-HE-Connection@site2cloud"
+        connection = "${var.custom_snat_connection_name}@site2cloud"
         snat_ips = "100.65.56.3"
     }
     snat_policy {
         src_cidr = "10.208.120.0/22"
         dst_cidr = "100.112.58.0/24"
         protocol = "all"
-        connection = "UST-HE-Connection@site2cloud"
+        connection = "${var.custom_snat_connection_name}@site2cloud"
         snat_ips = "100.65.56.3"
     }
     snat_policy {
         src_cidr = "10.209.120.0/22"
         dst_cidr = "100.112.58.0/24"
         protocol = "all"
-        connection = "UST-HE-Connection@site2cloud"
+        connection = "${var.custom_snat_connection_name}@site2cloud"
         snat_ips = "100.65.56.3"
     }
 }
 resource "aviatrix_gateway_snat" "gateway_snat_2" {
-    gw_name = "AWS-Partner-hagw"
+    gw_name = "${var.custom_snat_gw}-hagw"
     snat_mode = "customized_snat"
     snat_policy {
         src_cidr = "10.208.112.0/22" 
         dst_cidr = "100.112.28.0/24"  
         protocol = "all"
-        connection = "UST-HE-Connection@site2cloud"
+        connection = "${var.custom_snat_connection_name}@site2cloud"
         snat_ips = "100.65.56.2"
     }
   snat_policy {
         src_cidr = "10.209.80.0/20"
         dst_cidr = "100.112.28.0/24"
         protocol = "all"
-        connection = "UST-HE-Connection@site2cloud"
+        connection = "${var.custom_snat_connection_name}@site2cloud"
         snat_ips = "100.65.56.2"
     }
  snat_policy {
         src_cidr = "10.208.120.0/22"
         dst_cidr = "100.112.28.0/24"
         protocol = "all"
-        connection = "UST-HE-Connection@site2cloud"
+        connection = "${var.custom_snat_connection_name}@site2cloud"
         snat_ips = "100.65.56.2"
     }
   snat_policy {
         src_cidr = "10.209.120.0/22"
         dst_cidr = "100.112.28.0/24"
         protocol = "all"
-        connection = "UST-HE-Connection@site2cloud"
+        connection = "${var.custom_snat_connection_name}@site2cloud"
         snat_ips = "100.65.56.2"
     }
     snat_policy {
         src_cidr = "10.209.80.0/20"
         dst_cidr = "100.112.58.0/24"
         protocol = "all"
-        connection = "UST-HE-Connection@site2cloud"
+        connection = "${var.custom_snat_connection_name}@site2cloud"
         snat_ips = "100.65.56.4"
     }
     snat_policy {
         src_cidr = "10.208.112.0/22"
         dst_cidr = "100.112.58.0/24"
         protocol = "all"
-        connection = "UST-HE-Connection@site2cloud"
+        connection = "${var.custom_snat_connection_name}@site2cloud"
         snat_ips = "100.65.56.4"
     }
     snat_policy {
         src_cidr = "10.208.120.0/22"
         dst_cidr = "100.112.58.0/24"
         protocol = "all"
-        connection = "UST-HE-Connection@site2cloud"
+        connection = "${var.custom_snat_connection_name}@site2cloud"
         snat_ips = "100.65.56.4"
     }
     snat_policy {
         src_cidr = "10.209.120.0/22"
         dst_cidr = "100.112.58.0/24"
         protocol = "all"
-        connection = "UST-HE-Connection@site2cloud"
+        connection = "${var.custom_snat_connection_name}@site2cloud"
         snat_ips = "100.65.56.4"
     }
 }
