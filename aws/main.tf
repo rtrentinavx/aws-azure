@@ -142,9 +142,9 @@ module "mc-spoke" {
   name                             = each.key
   enable_bgp                       = each.value.enable_bgp
   local_as_number                  = each.value.enable_bgp ? each.value.local_as_number : null
-  allocate_new_eip                 = var.allocate_new_eip
-  eip                              = var.eip
-  ha_eip                           = var.ha_eip
+  allocate_new_eip                 = each.value.allocate_new_eip
+  eip                              = each.value.eip
+  ha_eip                           = each.value.ha_eip
 }
 #
 # vpcs without spokes 

@@ -17,6 +17,3 @@ variable "vpcs_without_spokes" {}
 variable "connections" {}
 variable "custom_snat_gw" {}
 variable "custom_snat_connection_name" {}
-variable "allocate_new_eip" {}
-variable "eip" {}
-variable "ha_eip" {} 
