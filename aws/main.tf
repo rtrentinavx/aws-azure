@@ -145,6 +145,10 @@ module "mc-spoke" {
   allocate_new_eip                 = each.value.allocate_new_eip
   eip                              = each.value.eip
   ha_eip                           = each.value.ha_eip
+  use_existing_vpc                 = each.value.use_existing_vpc
+  vpc_id                           = each.value.vpc_id
+  gw_subnet                        = each.value.gw_subnet
+  hagw_subnet                      = each.value.hagw_subnet
 }
 #
 # vpcs without spokes 
