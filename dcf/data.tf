@@ -1,0 +1,1 @@
+data "aviatrix_smart_groups" "foo" {}

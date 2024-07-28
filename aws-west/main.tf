@@ -149,7 +149,6 @@ module "mc-spoke" {
   vpc_id                           = each.value.vpc_id
   gw_subnet                        = each.value.gw_subnet
   hagw_subnet                      = each.value.hagw_subnet
-  single_ip_snat = each.value.single_ip_snat
 }
 #
 # vpcs without spokes 
