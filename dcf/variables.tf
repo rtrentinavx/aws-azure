@@ -4,4 +4,5 @@ variable "password" { type = string }
 variable "username" { type = string }
 variable "enable_distributed_firewalling" { type = bool }
 variable "smarties" {}
+variable "web_groups" {}
 variable "policies" {}

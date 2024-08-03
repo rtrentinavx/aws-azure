@@ -328,3 +328,6 @@ resource "aviatrix_spoke_external_device_conn" "spoke_external_device_conn" {
 #     snat_ips   = "100.65.56.4"
 #   }
 # }
+
+
+ping google.com| while read pong; do echo "$(date): $pong"; done
